@@ -66,6 +66,7 @@ function controller_info()
 	return {
 		model = DEVICE_NAME,
 		manufacturer = 'Focusrite - Novation',
+		copyright = "Copyright © 2021 Michael Kuron",
 		items =  controls,
 	}
 end
@@ -136,19 +137,42 @@ end
 
 function controller_select_patch(programchangeNumber, patchname, setname, concertname, patchlist, currentSetIndex, currentPatchIndex)
 	event = {
-		-- turn off button LEDs
-		0xBF, 0x25, 0x00,
-		0xBF, 0x26, 0x00,
-		0xBF, 0x27, 0x00,
-		0xBF, 0x28, 0x00,
-		0xBF, 0x29, 0x00,
-		0xBF, 0x2A, 0x00,
-		0xBF, 0x2B, 0x00,
-		0xBF, 0x2C, 0x00,
-		0xBF, 0x2D, 0x00,
 		-- display patch name in second line
 		0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x04, 1, string.crunch(patchname, 16), 0xF7,
 	}
+	-- turn off button LEDs
+	for i=0x25,0x2d do
+		table.insert(event, 0xBF)
+		table.insert(event, i)
+		table.insert(event, 0x00)
+	end
+	-- remove parameter names and values
+	for m=0x07,0x08 do
+		for i=0x38,0x3F do
+			table.insert(event, 0xF0)
+			table.insert(event, 0x00)
+			table.insert(event, 0x20)
+			table.insert(event, 0x29)
+			table.insert(event, 0x02)
+			table.insert(event, 0x0F)
+			table.insert(event, m)
+			table.insert(event, i)
+			table.insert(event, 0xF7)
+		end
+		for i=0x50,0x58 do
+			table.insert(event, 0xF0)
+			table.insert(event, 0x00)
+			table.insert(event, 0x20)
+			table.insert(event, 0x29)
+			table.insert(event, 0x02)
+			table.insert(event, 0x0F)
+			table.insert(event, m)
+			table.insert(event, i)
+			table.insert(event, 0xF7)
+		end
+	end
+	labelDisplayCache = {}
+	valueDisplayCache = {}
 	return {midi=event, outport=DAW_IN}
 end
 
