@@ -190,6 +190,7 @@ function controller_midi_out(midiEvent, name, valueString, color)
 			end
 			val = string.gsub(valueString, "㏈", "dB")
 			val = string.gsub(val, "∞", "oo")
+			val = string.gsub(val, "㎳", "ms")
 			if name == labelDisplayCache[midiEvent[1]] then
 				event = {
 					0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x08, midiEvent[1]-0x15+0x38, string.crunch(val, 16), 0xF7
@@ -213,6 +214,7 @@ function controller_midi_out(midiEvent, name, valueString, color)
 			end
 			val = string.gsub(valueString, "㏈", "dB")
 			val = string.gsub(val, "∞", "oo")
+			val = string.gsub(val, "㎳", "ms")
 			if name == labelDisplayCache[midiEvent[1]] then
 				event = {
 					0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x08, midiEvent[1]-0x35+0x50, string.crunch(val, 16), 0xF7
