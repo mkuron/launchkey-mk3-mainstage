@@ -9,5 +9,11 @@ or [Roland Fantom](https://static.roland.com/assets/media/pdf/FANTOM-6_7_8_daw_e
 limited only by the Launchkey MK3's much smaller display.
 For more details, see my [blog post](https://blog.michael.kuron-germany.de/2021/12/novation-launchkey-61-mk3-and-mainstage-3-5/).
 
+## Installation
+
 Just put the contents of this repository into _~/Music/Audio Music Apps/MainStage Devices_, connect your Launchkey MK3 via USB, and launch MainStage.
 This has been tested with the Novation Launchkey 61 MK3, but should also work with the Launchkey 49 MK3, Launchkey 37 MK3, and Launchkey 25 MK3.
+
+## Development
+
+MainStage logs some Lua output to Console.app after running `defaults write com.apple.mainstage3 LUA_DEBUG -bool true`. Don't forget to set it to `false` again afterwards so it doesn't unnecessarily slow down your live performance. MainStage also has a mildly interesting debug menu (`defaults write com.apple.mainstage3 debugMenu -bool true`).
