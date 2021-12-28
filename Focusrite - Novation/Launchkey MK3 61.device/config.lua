@@ -158,6 +158,9 @@ function controller_midi_out(midiEvent, name, valueString, color)
 	-- display parameter name and value
 	if midiEvent[0] == 0xBF then
 		if midiEvent[1] >= 0x15 and midiEvent[1] <= 0x1C then
+			name = string.gsub(name, "⅓", " 1/3")
+			name = string.gsub(name, "⅗", " 3/5")
+			name = string.gsub(name, "⅔", " 2/3")
 			if name == labelDisplayCache[midiEvent[1]] and valueString == valueDisplayCache[midiEvent[1]] then
 				return nil
 			end
@@ -178,6 +181,9 @@ function controller_midi_out(midiEvent, name, valueString, color)
 			return {midi=event, outport=DAW_IN}
 		end
 		if midiEvent[1] >= 0x35 and midiEvent[1] <= 0x3D then
+			name = string.gsub(name, "⅓", " 1/3")
+			name = string.gsub(name, "⅗", " 3/5")
+			name = string.gsub(name, "⅔", " 2/3")
 			if name == labelDisplayCache[midiEvent[1]] and valueString == valueDisplayCache[midiEvent[1]] then
 				return nil
 			end
