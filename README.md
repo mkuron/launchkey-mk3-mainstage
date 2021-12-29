@@ -17,3 +17,7 @@ This has been tested with the Novation Launchkey 61 MK3, but should also work wi
 ## Development
 
 MainStage logs some Lua output to Console.app after running `defaults write com.apple.mainstage3 LUA_DEBUG -bool true`. Don't forget to set it to `false` again afterwards so it doesn't unnecessarily slow down your live performance. MainStage also has a mildly interesting debug menu (`defaults write com.apple.mainstage3 debugMenu -bool true`).
+
+## Disclaimer
+
+This is not officially supported by Apple or Novation. Use at your own risk.
