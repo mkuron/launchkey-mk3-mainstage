@@ -115,7 +115,13 @@ function controller_names(channel)
 	end
 end
 
+old_patch = -1
 function controller_select_patch(programchangeNumber, patchname, setname, concertname, patchlist, currentSetIndex, currentPatchIndex)
+	if programchangeNumber < 0 or programchangeNumber == old_patch then
+		return {}
+	end
+	old_patch = programchangeNumber
+	
 	event = {
 		-- display patch name in second line
 		0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x04, 1, string.crunch(patchname, 16), 0xF7,
