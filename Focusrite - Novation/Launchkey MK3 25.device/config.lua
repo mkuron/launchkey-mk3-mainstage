@@ -25,6 +25,24 @@ controls = {
 	{name='Scene Up', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x6A,MIDI_LSB}},
 	{name='Scene Down', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x6B,MIDI_LSB}},
 	
+	{name='Drum Pads', label='Drum Pads', inport=DAW_OUT, outport=DAW_IN, objectType='Keyboard', midiType='Keyboard', startKey=36, numberKeys=24, midi={0x99,MIDI_Wildcard,MIDI_Wildcard}},
+	{name='Drum Pad 1', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x28,MIDI_LSB}},
+	{name='Drum Pad 2', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x29,MIDI_LSB}},
+	{name='Drum Pad 3', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x2A,MIDI_LSB}},
+	{name='Drum Pad 4', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x2B,MIDI_LSB}},
+	{name='Drum Pad 5', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x30,MIDI_LSB}},
+	{name='Drum Pad 6', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x31,MIDI_LSB}},
+	{name='Drum Pad 7', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x32,MIDI_LSB}},
+	{name='Drum Pad 8', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x33,MIDI_LSB}},
+	{name='Drum Pad 9', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x24,MIDI_LSB}},
+	{name='Drum Pad 10', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x25,MIDI_LSB}},
+	{name='Drum Pad 11', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x26,MIDI_LSB}},
+	{name='Drum Pad 12', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x27,MIDI_LSB}},
+	{name='Drum Pad 13', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x2C,MIDI_LSB}},
+	{name='Drum Pad 14', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x2D,MIDI_LSB}},
+	{name='Drum Pad 15', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x2E,MIDI_LSB}},
+	{name='Drum Pad 16', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x2F,MIDI_LSB}},
+	
 	{name='Pad 1', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x90,0x60,MIDI_LSB}},
 	{name='Pad 2', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x90,0x61,MIDI_LSB}},
 	{name='Pad 3', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x90,0x62,MIDI_LSB}},
@@ -57,9 +75,9 @@ function controller_initialize(appName, deviceNewlyDetected)
 		midi = {
 			-- DAW Mode
 			0x9f, 0x0c, 0x7f, -2,
-			-- Set default modes for Pads, Faders and Knobs
-			0xbf, 0x03, 0x02, -2,
-			0xbf, 0x09, 0x02, -2, 
+			-- set default modes
+			0xbf, 0x03, 0x01, -2, -- pad: drum
+			0xbf, 0x09, 0x02, -2, -- pot: device
 			-- display app name on first line
 			0xf0, 0x00, 0x20, 0x29, 0x02, 0x0F, 0x04, 0, string.crunch(appName, 16), 0xf7,
 			0xf0, 0x00, 0x20, 0x29, 0x02, 0x0F, 0x04, 1, " ", 0xf7,
@@ -145,8 +163,10 @@ function controller_select_patch(programchangeNumber, patchname, setname, concer
 	return {midi=event, outport=DAW_IN}
 end
 
+COLORS = {[0x000000] = 0x00, [0x00007f] = 0x29, [0x0000ff] = 0x2d, [0x007f00] = 0x1B, [0x007f7f] = 0x23, [0x007fff] = 0x29, [0x00ff00] = 0x57, [0x00ff7f] = 0x19, [0x00ffff] = 0x25, [0x7f0000] = 0x6A, [0x7f007f] = 0x37, [0x7f00ff] = 0x45, [0x7f7f00] = 0x40, [0x7f7f7f] = 0x01, [0x7f7fff] = 0x2D, [0x7fff00] = 0x7A, [0x7fff7f] = 0x15, [0x7fffff] = 0x25, [0xff0000] = 0x05, [0xff007f] = 0x5F, [0xff00ff] = 0x35, [0xff7f00] = 0x09, [0xff7f7f] = 0x05, [0xff7fff] = 0x35, [0xffff00] = 0x0D, [0xffff7f] = 0x6E, [0xffffff] = 0x03}
 valueDisplayCache = {}
 labelDisplayCache = {}
+drumColorCache = {}
 function controller_midi_out(midiEvent, name, valueString, color)
 	-- display parameter name and value
 	if midiEvent[0] == 0xBF then
@@ -174,6 +194,45 @@ function controller_midi_out(midiEvent, name, valueString, color)
 			valueDisplayCache[midiEvent[1]] = valueString
 			return {midi=event, outport=DAW_IN}
 		end
+	-- color the drum pads
+	elseif midiEvent[0] == 0x99 then
+		colorcode = 0
+		if math.abs(color.r - color.b) <= 0.01 and math.abs(color.b - color.g) <= 0.01 then
+			if color.r > 0.75 then
+				colorcode = 0x03
+			elseif color.r > 0.5 then
+				colorcode = 0x02
+			elseif color.r > 0.25 then
+				colorcode = 0x01
+			end
+		else
+			r = 0
+			if color.r > 0.666 then
+				r = 0xFF
+			elseif color.r > 0.333 then
+				r = 0x7F
+			end
+			g = 0
+			if color.g > 0.666 then
+				g = 0xFF
+			elseif color.g > 0.333 then
+				g = 0x7F
+			end
+			b = 0
+			if color.b > 0.666 then
+				b = 0xFF
+			elseif color.b > 0.333 then
+				b = 0x7F
+			end
+			num = r * 0x10000 + g * 0x100 + b
+			colorcode = COLORS[num]
+		end
+		if colorcode == drumColorCache[midiEvent[1]] then
+			return nil
+		end
+		drumColorCache[midiEvent[1]] = colorcode
+		event = {0x99, midiEvent[1], colorcode}
+		return {midi=event, outport=DAW_IN}
 	end
 	return nil
 end
