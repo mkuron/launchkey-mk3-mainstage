@@ -144,6 +144,12 @@ function controller_select_patch(programchangeNumber, patchname, setname, concer
 		-- display patch name in second line
 		0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x04, 1, string.crunch(patchname, 16), 0xF7,
 	}
+	-- turn off pad LEDs
+	for i=0x24,0x33 do
+		table.insert(event, 0x99)
+		table.insert(event, i)
+		table.insert(event, 0x00)
+	end
 	-- remove parameter names and values
 	for m=0x07,0x08 do
 		for i=0x38,0x3F do
@@ -163,7 +169,65 @@ function controller_select_patch(programchangeNumber, patchname, setname, concer
 	return {midi=event, outport=DAW_IN}
 end
 
-COLORS = {[0x000000] = 0x00, [0x00007f] = 0x29, [0x0000ff] = 0x2d, [0x007f00] = 0x1B, [0x007f7f] = 0x23, [0x007fff] = 0x29, [0x00ff00] = 0x57, [0x00ff7f] = 0x19, [0x00ffff] = 0x25, [0x7f0000] = 0x6A, [0x7f007f] = 0x37, [0x7f00ff] = 0x45, [0x7f7f00] = 0x40, [0x7f7f7f] = 0x01, [0x7f7fff] = 0x2D, [0x7fff00] = 0x7A, [0x7fff7f] = 0x15, [0x7fffff] = 0x25, [0xff0000] = 0x05, [0xff007f] = 0x5F, [0xff00ff] = 0x35, [0xff7f00] = 0x09, [0xff7f7f] = 0x05, [0xff7fff] = 0x35, [0xffff00] = 0x0D, [0xffff7f] = 0x6E, [0xffffff] = 0x03}
+COLORS = {0x616161, 0xB3B3B3, 0xDDDDDD, 0xFFFFFF, 0xFFB3B3, 0xFF6161, 0xDD6161, 0xB36161, 0xFFF3D5, 0xFFB361, 0xDD8C61, 0xB37661, 0xFFEEA1, 0xFFFF61, 0xDDDD61, 0xB3B361, 0xDDFFA1, 0xC2FF61, 0xA1DD61, 0x81B361, 0xC2FFB3, 0x61FF61, 0x61DD61, 0x61B361, 0xC2FFC2, 0x61FF8C, 0x61DD76, 0x61B36B, 0xC2FFCC, 0x61FFCC, 0x61DDA1, 0x61B381, 0xC2FFF3, 0x61FFE9, 0x61DDC2, 0x61B396, 0xC2F3FF, 0x61EEFF, 0x61C7DD, 0x61A1B3, 0xC2DDFF, 0x61C7FF, 0x61A1DD, 0x6181B3, 0xA18CFF, 0x6161FF, 0x6161DD, 0x6161B3, 0xCCB3FF, 0xA161FF, 0x8161DD, 0x7661B3, 0xFFB3FF, 0xFF61FF, 0xDD61DD, 0xB361B3, 0xFFB3D5, 0xFF61C2, 0xDD61A1, 0xB3618C, 0xFF7661, 0xE9B361, 0xDDC261, 0xA1A161, 0x61B361, 0x61B38C, 0x618CD5, 0x6161FF, 0x61B3B3, 0x8C61F3, 0xCCB3C2, 0x8C7681, 0xFF6161, 0xF3FFA1, 0xEEFC61, 0xCCFF61, 0x76DD61, 0x61FFCC, 0x61E9FF, 0x61A1FF, 0x8C61FF, 0xCC61FC, 0xEE8CDD, 0xA17661, 0xFFA161, 0xDDF961, 0xD5FF8C, 0x61FF61, 0xB3FFA1, 0xCCFCD5, 0xB3FFF6, 0xCCE4FF, 0xA1C2F6, 0xD5C2F9, 0xF98CFF, 0xFF61CC, 0xFFC261, 0xF3EE61, 0xE4FF61, 0xDDCC61, 0xB3A161, 0x61BA76, 0x76C28C, 0x8181A1, 0x818CCC, 0xCCAA81, 0xDD6161, 0xF9B3A1, 0xF9BA76, 0xFFF38C, 0xE9F9A1, 0xD5EE76, 0x8181A1, 0xF9F9D5, 0xDDFCE4, 0xE9E9FF, 0xE4D5FF, 0xB3B3B3, 0xD5D5D5, 0xF9FFFF, 0xE96161, 0xAA6161, 0x81F661, 0x61B361, 0xF3EE61, 0xB3A161, 0xEEC261, 0xC27661}
+GREYS = {[0x00] = 0x61, [0x01] = 0xB3, [0x02] = 0xDD, [0x03] = 0xFF}
+
+function redmean2(r1, g1, b1, r2, g2, b2)
+	rb = (r1+r2)/2
+	dR = r1-r2
+	dG = g1-g2
+	dB = b1-b2
+	
+	return (2+rb/256)*dR*dR + 4*dG*dG + (2+(255-rb)/256)*dB*dB
+end
+
+color_map = {}
+function find_nearest_color_id(color)
+	if color_map[color] ~= nil then
+		return color_map[color]
+	end
+	
+	offset = GREYS[0x00]
+	
+	r = bit32.band(color, 0xFF0000) / 0x10000
+	g = bit32.band(color, 0x00FF00) / 0x100
+	b = bit32.band(color, 0x0000FF)
+	
+	best_dist2 = 0xffffffffffff
+	color_id = -1
+	
+	if math.abs(r-g) <= 4 and math.abs(g-b) <= 4 then
+		for i, k in pairs(GREYS) do
+			k = (k - offset) / (0xFF - offset) * 0xff
+			
+			dist2 = (r - k)*(r - k)
+			if dist2 < best_dist2 then
+				best_dist2 = dist2
+				color_id = i
+			end
+		end
+	else
+		for i,c in pairs(COLORS) do
+			r2 = bit32.band(c, 0xFF0000) / 0x10000
+			g2 = bit32.band(c, 0x00FF00) / 0x100
+			b2 = bit32.band(c, 0x0000FF)
+			
+			r2 = (r2 - offset) / (0xFF - offset) * 0xff
+			g2 = (g2 - offset) / (0xFF - offset) * 0xff
+			b2 = (b2 - offset) / (0xFF - offset) * 0xff
+		
+			dist2 = redmean2(r, g, b, r2, g2, b2)
+			if dist2 < best_dist2 then
+				best_dist2 = dist2
+				color_id = i-1
+			end
+		end
+	end
+	
+	color_map[color] = color_id
+	return color_id
+end
+
 valueDisplayCache = {}
 labelDisplayCache = {}
 function controller_midi_out(midiEvent, name, valueString, color)
@@ -195,37 +259,7 @@ function controller_midi_out(midiEvent, name, valueString, color)
 		end
 	-- color the drum pads
 	elseif midiEvent[0] == 0x99 then
-		colorcode = 0
-		if math.abs(color.r - color.b) <= 0.01 and math.abs(color.b - color.g) <= 0.01 then
-			if color.r > 0.75 then
-				colorcode = 0x03
-			elseif color.r > 0.5 then
-				colorcode = 0x02
-			elseif color.r > 0.25 then
-				colorcode = 0x01
-			end
-		else
-			r = 0
-			if color.r > 0.666 then
-				r = 0xFF
-			elseif color.r > 0.333 then
-				r = 0x7F
-			end
-			g = 0
-			if color.g > 0.666 then
-				g = 0xFF
-			elseif color.g > 0.333 then
-				g = 0x7F
-			end
-			b = 0
-			if color.b > 0.666 then
-				b = 0xFF
-			elseif color.b > 0.333 then
-				b = 0x7F
-			end
-			num = r * 0x10000 + g * 0x100 + b
-			colorcode = COLORS[num]
-		end
+		colorcode = find_nearest_color_id(math.floor(color.r * 0xFF) * 0x10000 + math.floor(color.g * 0xFF) * 0x100 + math.floor(color.b * 0xFF))
 		event = {0x99, midiEvent[1], colorcode}
 		return {midi=event, outport=DAW_IN}
 	end
