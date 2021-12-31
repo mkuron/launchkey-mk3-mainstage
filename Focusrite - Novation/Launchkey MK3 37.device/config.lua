@@ -1,4 +1,5 @@
 DEVICE_NAME = 'Launchkey MK3 37'
+HAS_FADERS = false
 DAW_IN = 'LKMK3 DAW In'
 DAW_OUT = 'LKMK3 DAW Out'
 
@@ -20,10 +21,29 @@ controls = {
 	{name='Knob 7', inport=DAW_OUT, outport=DAW_IN, objectType='Knob', midi={0xBF,0x1B,MIDI_LSB}},
 	{name='Knob 8', inport=DAW_OUT, outport=DAW_IN, objectType='Knob', midi={0xBF,0x1C,MIDI_LSB}},
 	
+	{name='Fader 1', inport=DAW_OUT, outport=DAW_IN, objectType='VFader', midi={0xBF,0x35,MIDI_LSB}},
+	{name='Fader 2', inport=DAW_OUT, outport=DAW_IN, objectType='VFader', midi={0xBF,0x36,MIDI_LSB}},
+	{name='Fader 3', inport=DAW_OUT, outport=DAW_IN, objectType='VFader', midi={0xBF,0x37,MIDI_LSB}},
+	{name='Fader 4', inport=DAW_OUT, outport=DAW_IN, objectType='VFader', midi={0xBF,0x38,MIDI_LSB}},
+	{name='Fader 5', inport=DAW_OUT, outport=DAW_IN, objectType='VFader', midi={0xBF,0x39,MIDI_LSB}},
+	{name='Fader 6', inport=DAW_OUT, outport=DAW_IN, objectType='VFader', midi={0xBF,0x3A,MIDI_LSB}},
+	{name='Fader 7', inport=DAW_OUT, outport=DAW_IN, objectType='VFader', midi={0xBF,0x3B,MIDI_LSB}},
+	{name='Fader 8', inport=DAW_OUT, outport=DAW_IN, objectType='VFader', midi={0xBF,0x3C,MIDI_LSB}},
+	
 	{name='Track Left', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x67,MIDI_LSB}},
 	{name='Track Right', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x66,MIDI_LSB}},
 	{name='Scene Up', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x6A,MIDI_LSB}},
 	{name='Scene Down', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x6B,MIDI_LSB}},
+	
+	{name='Button 1', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x25,MIDI_LSB}},
+	{name='Button 2', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x26,MIDI_LSB}},
+	{name='Button 3', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x27,MIDI_LSB}},
+	{name='Button 4', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x28,MIDI_LSB}},
+	{name='Button 5', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x29,MIDI_LSB}},
+	{name='Button 6', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x2A,MIDI_LSB}},
+	{name='Button 7', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x2B,MIDI_LSB}},
+	{name='Button 8', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x2C,MIDI_LSB}},
+	{name='Arm/Select', inport=DAW_OUT, outport=DAW_IN, objectType='Button', midiType='Momentary', midi={0xBF,0x2D,MIDI_LSB}},
 	
 	{name='Drum Pads', label='Drum Pads', inport=DAW_OUT, outport=DAW_IN, objectType='Keyboard', midiType='Keyboard', startKey=36, numberKeys=24, midi={0x99,MIDI_Wildcard,MIDI_Wildcard}},
 	{name='Drum Pad 1', inport=DAW_OUT, outport=DAW_IN, objectType='Drumpad', midiType='Note', midi={0x99,0x28,MIDI_LSB}},
@@ -62,6 +82,13 @@ controls = {
 }
 
 function controller_info()
+	if not HAS_FADERS then
+		for i=#controls,1,-1 do
+			if string.sub(controls[i].name, 1, 6) == 'Button' or string.sub(controls[i].name, 1, 5) == 'Fader' or controls[i].name == 'Arm/Select' then
+				table.remove(controls, i)
+			end
+		end
+	end
 	return {
 		model = DEVICE_NAME,
 		manufacturer = 'Focusrite - Novation',
@@ -77,6 +104,7 @@ function controller_initialize(appName, deviceNewlyDetected)
 			0x9f, 0x0c, 0x7f, -2,
 			-- set default modes
 			0xbf, 0x03, 0x01, -2, -- pad: drum
+			0xbf, 0x0A, 0x02, -2, -- fader: device
 			0xbf, 0x09, 0x02, -2, -- pot: device
 			-- display app name on first line
 			0xf0, 0x00, 0x20, 0x29, 0x02, 0x0F, 0x04, 0, string.crunch(appName, 16), 0xf7,
@@ -144,6 +172,14 @@ function controller_select_patch(programchangeNumber, patchname, setname, concer
 		-- display patch name in second line
 		0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x04, 1, string.crunch(patchname, 16), 0xF7,
 	}
+	if HAS_FADERS then
+		-- turn off button LEDs
+		for i=0x25,0x2d do
+			table.insert(event, 0xBF)
+			table.insert(event, i)
+			table.insert(event, 0x00)
+		end
+	end
 	-- turn off pad LEDs
 	for i=0x24,0x33 do
 		table.insert(event, 0x99)
@@ -162,6 +198,19 @@ function controller_select_patch(programchangeNumber, patchname, setname, concer
 			table.insert(event, m)
 			table.insert(event, i)
 			table.insert(event, 0xF7)
+		end
+		if HAS_FADERS then
+			for i=0x50,0x58 do
+				table.insert(event, 0xF0)
+				table.insert(event, 0x00)
+				table.insert(event, 0x20)
+				table.insert(event, 0x29)
+				table.insert(event, 0x02)
+				table.insert(event, 0x0F)
+				table.insert(event, m)
+				table.insert(event, i)
+				table.insert(event, 0xF7)
+			end
 		end
 	end
 	labelDisplayCache = {}
@@ -251,6 +300,29 @@ function controller_midi_out(midiEvent, name, valueString, color)
 				event = {
 					0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x07, midiEvent[1]-0x15+0x38, string.crunch(name, 16), 0xF7,
 					0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x08, midiEvent[1]-0x15+0x38, string.crunch(val, 16), 0xF7
+				}
+				labelDisplayCache[midiEvent[1]] = name
+			end
+			valueDisplayCache[midiEvent[1]] = valueString
+			return {midi=event, outport=DAW_IN}
+		elseif HAS_FADERS and midiEvent[1] >= 0x35 and midiEvent[1] <= 0x3D then
+			name = string.gsub(name, "⅓", " 1/3")
+			name = string.gsub(name, "⅗", " 3/5")
+			name = string.gsub(name, "⅔", " 2/3")
+			if name == labelDisplayCache[midiEvent[1]] and valueString == valueDisplayCache[midiEvent[1]] then
+				return nil
+			end
+			val = string.gsub(valueString, "㏈", "dB")
+			val = string.gsub(val, "∞", "oo")
+			val = string.gsub(val, "㎳", "ms")
+			if name == labelDisplayCache[midiEvent[1]] then
+				event = {
+					0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x08, midiEvent[1]-0x35+0x50, string.crunch(val, 16), 0xF7
+				}
+			else
+				event = {
+					0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x07, midiEvent[1]-0x35+0x50, string.crunch(name, 16), 0xF7,
+					0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x08, midiEvent[1]-0x35+0x50, string.crunch(val, 16), 0xF7
 				}
 				labelDisplayCache[midiEvent[1]] = name
 			end

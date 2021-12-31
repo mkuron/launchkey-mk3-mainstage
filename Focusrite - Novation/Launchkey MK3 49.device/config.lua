@@ -1,4 +1,5 @@
 DEVICE_NAME = 'Launchkey MK3 49'
+HAS_FADERS = true
 DAW_IN = 'LKMK3 DAW In'
 DAW_OUT = 'LKMK3 DAW Out'
 
@@ -81,6 +82,13 @@ controls = {
 }
 
 function controller_info()
+	if not HAS_FADERS then
+		for i=#controls,1,-1 do
+			if string.sub(controls[i].name, 1, 6) == 'Button' or string.sub(controls[i].name, 1, 5) == 'Fader' or controls[i].name == 'Arm/Select' then
+				table.remove(controls, i)
+			end
+		end
+	end
 	return {
 		model = DEVICE_NAME,
 		manufacturer = 'Focusrite - Novation',
@@ -164,11 +172,13 @@ function controller_select_patch(programchangeNumber, patchname, setname, concer
 		-- display patch name in second line
 		0xF0, 0x00, 0x20, 0x29, 0x02, 0x0f, 0x04, 1, string.crunch(patchname, 16), 0xF7,
 	}
-	-- turn off button LEDs
-	for i=0x25,0x2d do
-		table.insert(event, 0xBF)
-		table.insert(event, i)
-		table.insert(event, 0x00)
+	if HAS_FADERS then
+		-- turn off button LEDs
+		for i=0x25,0x2d do
+			table.insert(event, 0xBF)
+			table.insert(event, i)
+			table.insert(event, 0x00)
+		end
 	end
 	-- turn off pad LEDs
 	for i=0x24,0x33 do
@@ -189,16 +199,18 @@ function controller_select_patch(programchangeNumber, patchname, setname, concer
 			table.insert(event, i)
 			table.insert(event, 0xF7)
 		end
-		for i=0x50,0x58 do
-			table.insert(event, 0xF0)
-			table.insert(event, 0x00)
-			table.insert(event, 0x20)
-			table.insert(event, 0x29)
-			table.insert(event, 0x02)
-			table.insert(event, 0x0F)
-			table.insert(event, m)
-			table.insert(event, i)
-			table.insert(event, 0xF7)
+		if HAS_FADERS then
+			for i=0x50,0x58 do
+				table.insert(event, 0xF0)
+				table.insert(event, 0x00)
+				table.insert(event, 0x20)
+				table.insert(event, 0x29)
+				table.insert(event, 0x02)
+				table.insert(event, 0x0F)
+				table.insert(event, m)
+				table.insert(event, i)
+				table.insert(event, 0xF7)
+			end
 		end
 	end
 	labelDisplayCache = {}
@@ -293,7 +305,7 @@ function controller_midi_out(midiEvent, name, valueString, color)
 			end
 			valueDisplayCache[midiEvent[1]] = valueString
 			return {midi=event, outport=DAW_IN}
-		elseif midiEvent[1] >= 0x35 and midiEvent[1] <= 0x3D then
+		elseif HAS_FADERS and midiEvent[1] >= 0x35 and midiEvent[1] <= 0x3D then
 			name = string.gsub(name, "⅓", " 1/3")
 			name = string.gsub(name, "⅗", " 3/5")
 			name = string.gsub(name, "⅔", " 2/3")
