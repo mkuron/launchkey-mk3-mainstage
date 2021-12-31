@@ -161,12 +161,13 @@ function controller_names(channel)
 	end
 end
 
-old_patch = -1
+old_patch = ""
 function controller_select_patch(programchangeNumber, patchname, setname, concertname, patchlist, currentSetIndex, currentPatchIndex)
-	if programchangeNumber < 0 or programchangeNumber == old_patch then
+	new_patch = patchname .. setname .. concertname
+	if new_patch == old_patch then
 		return {}
 	end
-	old_patch = programchangeNumber
+	old_patch = new_patch
 	
 	event = {
 		-- display patch name in second line
