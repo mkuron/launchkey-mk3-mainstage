@@ -1,0 +1,22 @@
+name: push
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build package
+        run: pkgbuild --root . --identifier de.kuron-germany.michael.mainstage-devices --version ${{github.ref}} --install-location "Music/Audio Music Apps/MainStage Devices" --filter '.git*' --filter 'README.md' /tmp/mainstage-devices-pkg.pkg
+      - name: Synthesize distribution
+        run: productbuild --synthesize --package /tmp/mainstage-devices-pkg.pkg /tmp/distribution.xml
+      - name: Edit distribution
+        run: sed -i '' 's|</installer-gui-script>|<domains enable_anywhere="false" enable_currentUserHome="true" enable_localSystem="false"/></installer-gui-script>|g' /tmp/distribution.xml
+      - name: Build product
+        run: cd /tmp && productbuild --distribution /tmp/distribution.xml --package-path /tmp/mainstage-devices-pkg.pkg /tmp/mainstage-devices.pkg && cd - && cp /tmp/mainstage-devices.pkg .
+      - uses: actions/upload-artifact@v3
+        with:
+          name: mainstage-devices.pkg
+          path: mainstage-devices.pkg
