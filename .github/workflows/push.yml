@@ -15,7 +15,7 @@ jobs:
       - name: Edit distribution
         run: sed -i '' 's|</installer-gui-script>|<domains enable_anywhere="false" enable_currentUserHome="true" enable_localSystem="false"/></installer-gui-script>|g' /tmp/distribution.xml
       - name: Build product
-        run: cd /tmp && productbuild --distribution /tmp/distribution.xml --package-path /tmp/mainstage-devices-pkg.pkg /tmp/mainstage-devices.pkg && cd - && cp /tmp/mainstage-devices.pkg .
+        run: cd /tmp && productbuild --distribution /tmp/distribution.xml --version ${{github.ref}} --package-path /tmp/mainstage-devices-pkg.pkg /tmp/mainstage-devices.pkg && cd - && cp /tmp/mainstage-devices.pkg .
       - uses: actions/upload-artifact@v3
         with:
           name: mainstage-devices.pkg

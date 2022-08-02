@@ -1,11 +1,11 @@
-DEVICE_NAME = 'Launchkey MK3 61'
-DEVICE_PID = 0x0f
+DEVICE_NAME = 'Launchkey MK3 88'
+DEVICE_PID = 0x12
 HAS_FADERS = true
 DAW_IN = 'LKMK3 DAW In'
 DAW_OUT = 'LKMK3 DAW Out'
 
 controls = {
-	{name='Keyboard', label=DEVICE_NAME, objectType='Keyboard', midiType='Keyboard', startKey=36, numberKeys=61, midi={0x90,MIDI_Wildcard,MIDI_Wildcard}},
+	{name='Keyboard', label=DEVICE_NAME, objectType='Keyboard', midiType='Keyboard', startKey=21, numberKeys=88, midi={0x90,MIDI_Wildcard,MIDI_Wildcard}},
 	{name='Pitch Bend', label='Pitch', objectType='Wheel', midi={0xE0,MIDI_MSB,MIDI_LSB}},
 	{name='Modulation', label='Mod', objectType='Wheel', midi={0xB0,0x01,MIDI_LSB}},
 	{name='Sustain Pedal', label='Sustain', objectType='Sustain Pedal', midiType='Momentary', midi={0xB0,0x40,MIDI_LSB}},
